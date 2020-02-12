@@ -9,6 +9,9 @@ Put together by [Techshed Frome](https://techshedfrome.org).
 
 ## Notes
 
+* Built using PlatformIO (Extension for VSCode that supports development for the Arduino platform)
+  * More of a full IDE experience than Arduino IDE
+  * Importantly, the ESP Async Webserver libarary is not available in the Arduino IDE any more, but is in PlatformIO!
 * Had a problem with AsyncTCP library - turned out that the ESP32 library was being pulled in rather than the ESP8266 version (listed as ESPAsyncTCP)
   * uninstalled the ESP32 version and it built/worked
 * The intention is to read data from an InfluxDB instance to show the state of sensor data
