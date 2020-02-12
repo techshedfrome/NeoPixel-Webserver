@@ -2,7 +2,7 @@
 
 Code has been patched together from examples to experiment with options for making animated lighting effects that respond to events, data values or user actions on the network.
 
-Initially, it's just using the ESP8266 async webserver, (with mDNS to make it available on the LAN as http://disco.local), driving a NeoPixel ring light, toggling whether the animation is active via HTTP GET requests to a specific path (currently http://disco.local.spin).
+Initially, it's just using the ESP8266 async webserver, (with mDNS to make it available on the LAN as http://disco.local), driving a NeoPixel ring light, toggling whether the animation is active via HTTP GET requests to a specific path (currently http://disco.local/spin).
 
 Put together by [Techshed Frome](https://techshedfrome.org).
 
