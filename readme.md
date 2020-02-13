@@ -9,7 +9,7 @@ Put together by [Techshed Frome](https://techshedfrome.org).
 
 ## Notes
 
-* Built using PlatformIO (Extension for VSCode that supports development for the Arduino platform)
+* Built using [PlatformIO](https://platformio.org/) (Extension for [VSCode](https://code.visualstudio.com/) that supports development for the Arduino platform)
   * More of a full IDE experience than Arduino IDE
   * Importantly, the ESP Async Webserver libarary is not available in the Arduino IDE any more, but is in PlatformIO!
 * Had a problem with AsyncTCP library - turned out that the ESP32 library was being pulled in rather than the ESP8266 version (listed as ESPAsyncTCP)
