@@ -11,6 +11,8 @@
 #include <ESP8266HTTPClient.h>
 #else
 #endif
+#include <ArduinoHttpClient.h>
+#include <WiFi.h>
 
 AsyncWebServer server(80);
 const char *PARAM_MESSAGE  = "message";
@@ -23,6 +25,8 @@ const char *PARAM_MESSAGE  = "message";
 #define LED_COUNT 12
 #endif
 
+#define LOGGING true
+
 const char *ssid = STASSID;
 const char *password = STAPSK;
 const char *hostname = MDNS_HOSTNAME;
@@ -31,6 +35,8 @@ bool lightIsOn = false;
 const int led = 16;
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+WiFiClient wifi;
 
 void notFound(AsyncWebServerRequest *request)
 {
@@ -89,6 +95,50 @@ void httpTest()
   }
 }
 
+void simpleHttp()
+{
+  // char *root = "http://192.168.1.89";
+  char *host = "192.168.1.89";
+  const IPAddress ip = IPAddress(192,168,1,89);
+  uint16_t port = 8888;
+  char *path = "/gogs/";
+  HttpClient client = HttpClient(wifi, ip, 8888);
+  Serial.println("making GET request");
+  client.get(path);
+  
+  // read the status code and body of the response
+  int statusCode = client.responseStatusCode();
+  Serial.printf("[HTTP Client] Response code: %d\n", statusCode);
+  if (statusCode > 0)
+  { // HTTP header has been send and Server response header has been handled
+    String response = client.responseBody();
+    Serial.println(response);
+    Serial.println(response);
+  }
+  else
+  {
+    Serial.printf("[HTTP Client] Fatal Internal Error");
+  }
+}
+
+void showGif(AsyncWebServerRequest *request)
+{
+  static const uint8_t gif[] PROGMEM = {
+      0x47, 0x49, 0x46, 0x38, 0x37, 0x61, 0x10, 0x00, 0x10, 0x00, 0x80, 0x01,
+      0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0x2c, 0x00, 0x00, 0x00, 0x00,
+      0x10, 0x00, 0x10, 0x00, 0x00, 0x02, 0x19, 0x8c, 0x8f, 0xa9, 0xcb, 0x9d,
+      0x00, 0x5f, 0x74, 0xb4, 0x56, 0xb0, 0xb0, 0xd2, 0xf2, 0x35, 0x1e, 0x4c,
+      0x0c, 0x24, 0x5a, 0xe6, 0x89, 0xa6, 0x4d, 0x01, 0x00, 0x3b};
+  char gif_colored[sizeof(gif)];
+  memcpy_P(gif_colored, gif, sizeof(gif));
+  // Set the background to a random set of colors
+  gif_colored[16] = millis() % 256;
+  gif_colored[17] = millis() % 256;
+  gif_colored[18] = millis() % 256;
+
+  request->send(200, "image/gif", gif_colored);
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -119,27 +169,13 @@ void setup()
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     digitalWrite(led, 1);
-    httpTest();
+    // httpTest();
+    simpleHttp();
     request->send(200, "text/plain", "hello from esp8266!");
     digitalWrite(led, 0);
   });
 
-  server.on("/gif", HTTP_GET, [](AsyncWebServerRequest *request) {
-    static const uint8_t gif[] PROGMEM = {
-        0x47, 0x49, 0x46, 0x38, 0x37, 0x61, 0x10, 0x00, 0x10, 0x00, 0x80, 0x01,
-        0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0x2c, 0x00, 0x00, 0x00, 0x00,
-        0x10, 0x00, 0x10, 0x00, 0x00, 0x02, 0x19, 0x8c, 0x8f, 0xa9, 0xcb, 0x9d,
-        0x00, 0x5f, 0x74, 0xb4, 0x56, 0xb0, 0xb0, 0xd2, 0xf2, 0x35, 0x1e, 0x4c,
-        0x0c, 0x24, 0x5a, 0xe6, 0x89, 0xa6, 0x4d, 0x01, 0x00, 0x3b};
-    char gif_colored[sizeof(gif)];
-    memcpy_P(gif_colored, gif, sizeof(gif));
-    // Set the background to a random set of colors
-    gif_colored[16] = millis() % 256;
-    gif_colored[17] = millis() % 256;
-    gif_colored[18] = millis() % 256;
-
-    request->send(200, "image/gif", gif_colored);
-  });
+  server.on("/gif", HTTP_GET, showGif);
 
   // Send a GET request to <IP>/get?message=<message>
   server.on("/spin", HTTP_GET, [](AsyncWebServerRequest *request) {
