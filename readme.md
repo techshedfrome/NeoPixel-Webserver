@@ -8,16 +8,23 @@ Put together by [Techshed Frome](https://techshedfrome.org).
 
 
 ## Notes
+* The intention is to read data from an InfluxDB instance to show the state of sensor data
+  * we could forward the statuses to the ESP via MQTT
+  * but it's good to have some user-control over HTTP, so probably an HTTP API will remain on the ESP (not sure if we can combine that with an MQTT listener/subscriber, but we'll give it a go!)
 
+
+## PlatformIO
 * Built using PlatformIO (Extension for VSCode that supports development for the Arduino platform)
   * More of a full IDE experience than Arduino IDE
   * Importantly, the ESP Async Webserver libarary is not available in the Arduino IDE any more, but is in PlatformIO!
 * Had a problem with AsyncTCP library - turned out that the ESP32 library was being pulled in rather than the ESP8266 version (listed as ESPAsyncTCP)
   * uninstalled the ESP32 version and it built/worked
-* The intention is to read data from an InfluxDB instance to show the state of sensor data
-  * we could forward the statuses to the ESP via MQTT
-  * but it's good to have some user-control over HTTP, so probably an HTTP API will remain on the ESP (not sure if we can combine that with an MQTT listener/subscriber, but we'll give it a go!)
-
+* In order to make use of the serial monitor we need to add `monitor_speed = 115200` to the `platformio.ini` file tom match the baud speed set via `Serial.begin(115200);` in the `main.cpp` file
+* key bindings in VSCode: https://docs.platformio.org/en/latest/ide/vscode.html#key-bindings
+* CLI setup - https://docs.platformio.org/en/latest/installation.html#piocore-install-shell-commands
+* debug log output is controlled via `build_flags` in `platformio.ini` allowing debug levels to be set in PlatformIO in a similar way to the Arduino IDE
+  * Specific library debug flags can be turned on individually.  The below enables debug output on ESP8266 for the following libraries [CORE, HTTP_CLIENT] with output over serial port.
+  * `build_flags = -DDEBUG_ESP_CORE -DDEBUG_ESP_HTTP_CLIENT -DDEBUG_ESP_PORT=Serial`
 
 ## References Credits:
 * Async webserver example code: https://github.com/me-no-dev/ESPAsyncWebServer/tree/master/examples/simple_server
