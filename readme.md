@@ -12,7 +12,7 @@ Put together by [Techshed Frome](https://techshedfrome.org).
   * we could forward the statuses to the ESP via MQTT
   * but it's good to have some user-control over HTTP, so probably an HTTP API will remain on the ESP (not sure if we can combine that with an MQTT listener/subscriber, but we'll give it a go!)
 
-
+## PlatformIO
 * Built using [PlatformIO](https://platformio.org/) (Extension for [VSCode](https://code.visualstudio.com/) that supports development for the Arduino platform)
   * More of a full IDE experience than Arduino IDE
   * Importantly, the ESP Async Webserver libarary is not available in the Arduino IDE any more, but is in PlatformIO!
@@ -24,7 +24,15 @@ Put together by [Techshed Frome](https://techshedfrome.org).
 * debug log output is controlled via `build_flags` in `platformio.ini` allowing debug levels to be set in PlatformIO in a similar way to the Arduino IDE
   * Specific library debug flags can be turned on individually.  The below enables debug output on ESP8266 for the following libraries [CORE, HTTP_CLIENT] with output over serial port.
   * `build_flags = -DDEBUG_ESP_CORE -DDEBUG_ESP_HTTP_CLIENT -DDEBUG_ESP_PORT=Serial`
+* in case of build conflicts with WiFi client calls:
+  * add the following to `platformio.ini` `lib_ignore = WiFi`
+  * https://community.platformio.org/t/solved-first-defined-here-error-on-building-esp8266webserver/8164
+* Problems with the HTTP Client library are actually related to making the call from an async callback
+  * HTTP Client uses WiFiClient's calls which don't appear to be working from the async webserver's callbacks
+    * applied temporary fix inspired by this: https://community.platformio.org/t/debugging-wificlient-with-an-esp8266-on-platformio/9891/21
+    * root cause may be similar to: https://github.com/espressif/arduino-esp32/issues/1595
 
 ## References Credits:
 * Async webserver example code: https://github.com/me-no-dev/ESPAsyncWebServer/tree/master/examples/simple_server
 * Basic light ring animation:  https://github.com/JonnyBanana/NEOPIXEL_WS2812_5050_SKETCHS/blob/master/Code/Like_Disco/Like_Disco.ino
+* Awesome dummy API returning various JSON objects for testing purposes: http://jsonplaceholder.typicode.com

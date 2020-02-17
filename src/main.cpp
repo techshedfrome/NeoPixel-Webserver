@@ -1,7 +1,7 @@
 
-#include <Adafruit_NeoPixel.h>
 
-// #include <Arduino.h>
+#include <Arduino.h>
+#include <Adafruit_NeoPixel.h>
 #ifdef ESP32
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
@@ -9,13 +9,12 @@
 #include <ESP8266mDNS.h>
 #include <ESPAsyncWebServer.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266WiFi.h>
 #else
 #endif
-#include <ArduinoHttpClient.h>
-#include <WiFi.h>
 
 AsyncWebServer server(80);
-const char *PARAM_MESSAGE  = "message";
+const char *PARAM_MESSAGE = "message";
 
 #ifndef STASSID
 #define STASSID ""
@@ -60,19 +59,16 @@ void notFound(AsyncWebServerRequest *request)
 void httpTest()
 {
   HTTPClient http;
+  WiFiClient client;
 
   Serial.print("[HTTP Client] begin");
-  // if (http.begin(client, "http://10.10.1.116:8086/query?q=show%20databases"))
-  // char *url = "http://192.168.1.89:8888/gogs/";
-  char *root = "http://192.168.1.89";
-  uint16_t port = 8888;
-  char *path = "/gogs/";
-  if (http.begin(root, port, path))
+  String url = "http://jsonplaceholder.typicode.com/todos/1";
+  // String url = "http://techshed.local:8086/query?q=show%20databases";
+  // String url = "http://10.10.1.116:8086/query?q=show%20databases";
+  if (http.begin(client, url))
   {
-    Serial.printf("\n[HTTP Client] GET - %s:%d%s\n", root, port, path);
+    Serial.printf("\n[HTTP Client] GET - %s\n", url.c_str());
     // start connection and send HTTP header
-    http.addHeader("Content-Type", "text/html");
-    http.addHeader("Expect", "text/html");
     int httpCode = http.GET();
     if (httpCode > 0)
     { // HTTP header has been send and Server response header has been handled
@@ -97,28 +93,28 @@ void httpTest()
 
 void simpleHttp()
 {
-  // char *root = "http://192.168.1.89";
-  char *host = "192.168.1.89";
-  const IPAddress ip = IPAddress(192,168,1,89);
-  uint16_t port = 8888;
-  char *path = "/gogs/";
-  HttpClient client = HttpClient(wifi, ip, 8888);
-  Serial.println("making GET request");
-  client.get(path);
-  
-  // read the status code and body of the response
-  int statusCode = client.responseStatusCode();
-  Serial.printf("[HTTP Client] Response code: %d\n", statusCode);
-  if (statusCode > 0)
-  { // HTTP header has been send and Server response header has been handled
-    String response = client.responseBody();
-    Serial.println(response);
-    Serial.println(response);
-  }
-  else
-  {
-    Serial.printf("[HTTP Client] Fatal Internal Error");
-  }
+  // char *host = "192.168.1.89";
+  // const IPAddress ip = IPAddress(192,168,1,89);
+  // uint16_t port = 8888;
+  // char *path = "/gogs/";
+
+  // HttpClient client = HttpClient(wifi, ip, 8888);
+  // Serial.println("making GET request");
+  // client.get(path);
+
+  // // read the status code and body of the response
+  // int statusCode = client.responseStatusCode();
+  // Serial.printf("[HTTP Client] Response code: %d\n", statusCode);
+  // if (statusCode > 0)
+  // { // HTTP header has been send and Server response header has been handled
+  //   String response = client.responseBody();
+  //   Serial.println(response);
+  //   Serial.println(response);
+  // }
+  // else
+  // {
+  //   Serial.printf("[HTTP Client] Fatal Internal Error");
+  // }
 }
 
 void showGif(AsyncWebServerRequest *request)
@@ -139,14 +135,15 @@ void showGif(AsyncWebServerRequest *request)
   request->send(200, "image/gif", gif_colored);
 }
 
+bool makeCall = false;
 void setup()
 {
   Serial.begin(115200);
 
-  strip.begin();                           // INITIALIZE NeoPixel strip object (REQUIRED)
-  strip.show();                            // Turn OFF all pixels ASAP
-  strip.setBrightness(50);                 // Set BRIGHTNESS to about 1/5 (max = 255)
-  strip.show();                            // Turn OFF all pixels ASAP
+  strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+  strip.show();            // Turn OFF all pixels ASAP
+  strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+  strip.show();            // Turn OFF all pixels ASAP
 
   pinMode(led, OUTPUT);
   digitalWrite(led, 0);
@@ -165,13 +162,21 @@ void setup()
 
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
-  Serial.println(HTTPCLIENT_1_1_COMPATIBLE);
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "hello from esp8266!");
+  });
+  server.on("/test1", HTTP_GET, [](AsyncWebServerRequest *request) {
     digitalWrite(led, 1);
     // httpTest();
+    makeCall = true;
+    request->send(200, "text/plain", "httpTest");
+    digitalWrite(led, 0);
+  });
+  server.on("/test2", HTTP_GET, [](AsyncWebServerRequest *request) {
+    digitalWrite(led, 1);
     simpleHttp();
-    request->send(200, "text/plain", "hello from esp8266!");
+    request->send(200, "text/plain", "simpleHttp");
     digitalWrite(led, 0);
   });
 
@@ -180,15 +185,6 @@ void setup()
   // Send a GET request to <IP>/get?message=<message>
   server.on("/spin", HTTP_GET, [](AsyncWebServerRequest *request) {
     String message;
-    // if (request->hasParam(PARAM_MESSAGE))
-    // {
-    //   message = request->getParam(PARAM_MESSAGE)->value();
-    // }
-    // else
-    // {
-    //    message = "this works as well";
-    // }
-
     lightIsOn = !lightIsOn;
     if (lightIsOn)
     {
@@ -319,8 +315,16 @@ void disco()
     theaterChase(strip.Color(143, 0, 255), 25);
 }
 
+void callOnce()
+{
+  httpTest();
+  makeCall = false;
+}
+
 void loop()
 {
   MDNS.update();
   disco();
+  if (makeCall)
+    callOnce();
 }
