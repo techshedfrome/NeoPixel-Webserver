@@ -11,6 +11,9 @@ Put together by [Techshed Frome](https://techshedfrome.org).
 * The intention is to read data from an InfluxDB instance to show the state of sensor data
   * we could forward the statuses to the ESP via MQTT
   * but it's good to have some user-control over HTTP, so probably an HTTP API will remain on the ESP (not sure if we can combine that with an MQTT listener/subscriber, but we'll give it a go!)
+* We could also pull the last reading directly form the device via `http://[device-ip-address]/values, but with the influx values, we can avg out the data etc.
+* Only tested with NodeMCU esp8266 board so far
+* Neopixel set up is for a 12 LED ring, but easy to change
 
 ## PlatformIO
 * Built using [PlatformIO](https://platformio.org/) (Extension for [VSCode](https://code.visualstudio.com/) that supports development for the Arduino platform)
