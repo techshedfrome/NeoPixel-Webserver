@@ -35,6 +35,10 @@ Put together by [Techshed Frome](https://techshedfrome.org).
     * applied temporary fix inspired by this: https://community.platformio.org/t/debugging-wificlient-with-an-esp8266-on-platformio/9891/21
     * root cause may be similar to: https://github.com/espressif/arduino-esp32/issues/1595
 
+## AdrionoJSON Library
+We've imported ArduinoJSON to deserialise the data we fetch from InfluxDb.
+* https://arduinojson.org/book/deserialization_tutorial6.pdf#page=10
+
 ## References Credits:
 * Async webserver example code: https://github.com/me-no-dev/ESPAsyncWebServer/tree/master/examples/simple_server
 * Basic light ring animation:  https://github.com/JonnyBanana/NEOPIXEL_WS2812_5050_SKETCHS/blob/master/Code/Like_Disco/Like_Disco.ino

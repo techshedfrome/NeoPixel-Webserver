@@ -83,24 +83,6 @@ void notFound(AsyncWebServerRequest *request)
   digitalWrite(led, 0);
 }
 
-void showGif(AsyncWebServerRequest *request)
-{
-  static const uint8_t gif[] PROGMEM = {
-      0x47, 0x49, 0x46, 0x38, 0x37, 0x61, 0x10, 0x00, 0x10, 0x00, 0x80, 0x01,
-      0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0x2c, 0x00, 0x00, 0x00, 0x00,
-      0x10, 0x00, 0x10, 0x00, 0x00, 0x02, 0x19, 0x8c, 0x8f, 0xa9, 0xcb, 0x9d,
-      0x00, 0x5f, 0x74, 0xb4, 0x56, 0xb0, 0xb0, 0xd2, 0xf2, 0x35, 0x1e, 0x4c,
-      0x0c, 0x24, 0x5a, 0xe6, 0x89, 0xa6, 0x4d, 0x01, 0x00, 0x3b};
-  char gif_colored[sizeof(gif)];
-  memcpy_P(gif_colored, gif, sizeof(gif));
-  // Set the background to a random set of colors
-  gif_colored[16] = millis() % 256;
-  gif_colored[17] = millis() % 256;
-  gif_colored[18] = millis() % 256;
-
-  request->send(200, "image/gif", gif_colored);
-}
-
 void spin(AsyncWebServerRequest *request)
 {
   String message;
@@ -128,10 +110,9 @@ void setupWebServer(){
     digitalWrite(led, 0);
   });
 
-  server.on("/gif", HTTP_GET, showGif);
   server.on("/spin", HTTP_GET, spin);
 
-  // Send a POST request to <IP>/ with a form field message set to <message>
+  // handle a POST request to <IP>/ with a form field message set to <message>
   server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
     String message;
     if (request->hasParam(PARAM_MESSAGE, true))
@@ -264,8 +245,9 @@ void makeHttpGetRequest()
 
   Serial.print("[HTTP Client] begin");
   //String url = "http://jsonplaceholder.typicode.com/todos/1";
+
+  // Fetch the single newest record from InfluxDb
   String url = "http://techshed.local:8086/query?db=luftdaten&q=select%20*%20from%20feinstaub%20order%20by%20time%20desc%20%20limit%201";
-  //String url = "http://10.10.1.116:8086/query?q=show%20databases";
   if (http.begin(wifi, url))
   {
     Serial.printf("\n[HTTP Client] GET - %s\n", url.c_str());
