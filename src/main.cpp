@@ -38,7 +38,7 @@ WiFiClient wifi;
 void initialiseNeopixel(){
   strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(10); // Set BRIGHTNESS to about 1/5 (max = 255)
+  strip.setBrightness(10); // Set BRIGHTNESS (max = 255)
   strip.show();            // Turn OFF all pixels ASAP
 }
 
@@ -151,7 +151,6 @@ void setPixels(uint32_t color, int startIndex, int skip)
 
 void rotatePixels(uint32_t color, int rotationStep, int animationStepDelay)
 {
-  // strip.clear();
   for (int b = 0; b < rotationStep; b++)
   {
     setPixels(color, b, strip.numPixels()/4);
@@ -162,7 +161,7 @@ void rotatePixels(uint32_t color, int rotationStep, int animationStepDelay)
 void animate(uint32_t color, int animationStepSize, int animationStepDelay, int iterations)
 {
   for (int a = 0; a < iterations; a++)
-    rotatePixels(color, animationStepSize, animationStepDelay);
+      rotatePixels(color, animationStepSize, animationStepDelay);
 }
 
 void animateThroughColors(int animationStepSize, int animationStepDelay, int iterations)
