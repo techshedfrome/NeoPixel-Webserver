@@ -164,14 +164,14 @@ void animate(uint32_t color, int animationStepSize, int animationStepDelay, int 
       rotatePixels(color, animationStepSize, animationStepDelay);
 }
 
-void animateThroughColors(int animationStepSize, int animationStepDelay, int iterations)
+void animateThroughColors(int animationStepSize, int animationStepDelay, int iterationsPerColor)
 {
-  if (runAnimation) animate(strip.Color(127, 127, 127), animationStepSize, animationStepDelay, iterations);
-  if (runAnimation) animate(strip.Color(255, 255, 000), animationStepSize, animationStepDelay, iterations);
-  if (runAnimation) animate(strip.Color(127, 000, 000), animationStepSize, animationStepDelay, iterations);
-  if (runAnimation) animate(strip.Color(000, 255, 000), animationStepSize, animationStepDelay, iterations);
-  if (runAnimation) animate(strip.Color(000, 000, 127), animationStepSize, animationStepDelay, iterations);
-  if (runAnimation) animate(strip.Color(143, 000, 255), animationStepSize, animationStepDelay, iterations);
+  if (runAnimation) animate(strip.Color(127, 127, 127), animationStepSize, animationStepDelay, iterationsPerColor);
+  if (runAnimation) animate(strip.Color(255, 255, 000), animationStepSize, animationStepDelay, iterationsPerColor);
+  if (runAnimation) animate(strip.Color(127, 000, 000), animationStepSize, animationStepDelay, iterationsPerColor);
+  if (runAnimation) animate(strip.Color(000, 255, 000), animationStepSize, animationStepDelay, iterationsPerColor);
+  if (runAnimation) animate(strip.Color(000, 000, 127), animationStepSize, animationStepDelay, iterationsPerColor);
+  if (runAnimation) animate(strip.Color(143, 000, 255), animationStepSize, animationStepDelay, iterationsPerColor);
 }
 
 void disco()
