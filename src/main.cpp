@@ -1,4 +1,4 @@
-
+#include <ArduinoJson.h>
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #ifdef ESP32
@@ -16,8 +16,8 @@ AsyncWebServer server(80);
 const char *PARAM_MESSAGE = "message";
 
 #ifndef STASSID
-#define STASSID "EE-wg5d25"
-#define STAPSK "gem-sent-stats"
+#define STASSID "Remakery"
+#define STAPSK "Remakery"
 #define MDNS_HOSTNAME "disco"
 #define LED_PIN 2
 #define LED_COUNT 12
@@ -263,9 +263,9 @@ void makeHttpGetRequest()
   HTTPClient http;
 
   Serial.print("[HTTP Client] begin");
-  String url = "http://jsonplaceholder.typicode.com/todos/1";
-  // String url = "http://techshed.local:8086/query?q=show%20databases";
-  // String url = "http://10.10.1.116:8086/query?q=show%20databases";
+  //String url = "http://jsonplaceholder.typicode.com/todos/1";
+  String url = "http://techshed.local:8086/query?db=luftdaten&q=select%20*%20from%20feinstaub%20order%20by%20time%20desc%20%20limit%201";
+  //String url = "http://10.10.1.116:8086/query?q=show%20databases";
   if (http.begin(wifi, url))
   {
     Serial.printf("\n[HTTP Client] GET - %s\n", url.c_str());
@@ -277,7 +277,19 @@ void makeHttpGetRequest()
       if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY)
       {
         String payload = http.getString();
+        StaticJsonDocument<10000> doc;
+
+        DeserializationError error = deserializeJson(doc, payload);
+        if (error)
+          Serial.printf("[JSON] Error: %s\n", error.c_str());
+
+        JsonObject results = doc["results"][0];
+        JsonObject series = results["series"][0];
+        String values = series["values"][0];
+        String time = series["values"][0][0];
+
         Serial.println(payload);
+        Serial.println(time);
       }
     }
     else
