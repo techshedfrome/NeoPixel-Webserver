@@ -28,7 +28,7 @@ const char *PARAM_MESSAGE = "message";
 const char *ssid = STASSID;
 const char *password = STAPSK;
 const char *hostname = MDNS_HOSTNAME;
-bool runAnimation = false;
+bool runAnimation = true;
 
 const int led = 16;
 
@@ -38,7 +38,7 @@ WiFiClient wifi;
 void initialiseNeopixel(){
   strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+  strip.setBrightness(10); // Set BRIGHTNESS to about 1/5 (max = 255)
   strip.show();            // Turn OFF all pixels ASAP
 }
 
@@ -141,102 +141,48 @@ void setup()
   setupWebServer();
 }
 
-void theaterChase(uint32_t color, int wait)
+void setPixels(uint32_t color, int startIndex, int skip)
 {
-  for (int a = 0; a < 10; a++)
-  {
-    for (int b = 0; b < 3; b++)
-    {
-      strip.clear();
+  strip.clear();
+  for (int pixel = startIndex; pixel < strip.numPixels(); pixel += skip)
+      strip.setPixelColor(pixel, color);
+  strip.show();
+}
 
-      for (int c = b; c < strip.numPixels(); c += 3)
-      {
-        strip.setPixelColor(c, color);
-      }
-      strip.show();
-      delay(wait);
-    }
+void rotatePixels(uint32_t color, int rotationStep, int animationStepDelay)
+{
+  // strip.clear();
+  for (int b = 0; b < rotationStep; b++)
+  {
+    setPixels(color, b, strip.numPixels()/4);
+    delay(animationStepDelay);
   }
 }
 
-void theaterChaseTwo(uint32_t color, int wait)
+void animate(uint32_t color, int animationStepSize, int animationStepDelay, int iterations)
 {
-  for (int a = 0; a < 5; a++)
-  {
-    for (int b = 0; b < 4; b++)
-    {
-      strip.clear();
-
-      for (int c = b; c < strip.numPixels(); c += 3)
-      {
-        strip.setPixelColor(c, color);
-      }
-      strip.show();
-      delay(wait);
-    }
-  }
+  for (int a = 0; a < iterations; a++)
+    rotatePixels(color, animationStepSize, animationStepDelay);
 }
 
-void theaterChaseThree(uint32_t color, int wait)
+void animateThroughColors(int animationStepSize, int animationStepDelay, int iterations)
 {
-  for (int a = 0; a < 10; a++)
-  {
-    for (int b = 0; b < 2; b++)
-    {
-      strip.clear();
-
-      for (int c = b; c < strip.numPixels(); c += 3)
-      {
-        strip.setPixelColor(c, color);
-      }
-      strip.show();
-      delay(wait);
-    }
-  }
+  if (runAnimation) animate(strip.Color(127, 127, 127), animationStepSize, animationStepDelay, iterations);
+  if (runAnimation) animate(strip.Color(255, 255, 000), animationStepSize, animationStepDelay, iterations);
+  if (runAnimation) animate(strip.Color(127, 000, 000), animationStepSize, animationStepDelay, iterations);
+  if (runAnimation) animate(strip.Color(000, 255, 000), animationStepSize, animationStepDelay, iterations);
+  if (runAnimation) animate(strip.Color(000, 000, 127), animationStepSize, animationStepDelay, iterations);
+  if (runAnimation) animate(strip.Color(143, 000, 255), animationStepSize, animationStepDelay, iterations);
 }
 
 void disco()
 {
   strip.clear();
   strip.show();
-  if (runAnimation)
-    theaterChaseTwo(strip.Color(127, 127, 127), 100); // set brightness to 100
-  if (runAnimation)
-    theaterChaseTwo(strip.Color(255, 255, 0), 100);
-  if (runAnimation)
-    theaterChaseTwo(strip.Color(127, 0, 0), 100);
-  if (runAnimation)
-    theaterChaseTwo(strip.Color(0, 255, 0), 100);
-  if (runAnimation)
-    theaterChaseTwo(strip.Color(0, 0, 127), 100);
-  if (runAnimation)
-    theaterChaseTwo(strip.Color(143, 0, 255), 100);
 
-  if (runAnimation)
-    theaterChase(strip.Color(127, 127, 127), 50); // 50 = half brightness
-  if (runAnimation)
-    theaterChase(strip.Color(255, 255, 0), 50);
-  if (runAnimation)
-    theaterChase(strip.Color(127, 0, 0), 50);
-  if (runAnimation)
-    theaterChase(strip.Color(0, 255, 0), 50);
-  if (runAnimation)
-    theaterChase(strip.Color(0, 0, 127), 50);
-  if (runAnimation)
-    theaterChase(strip.Color(143, 0, 255), 50);
-
-  if (runAnimation)
-    theaterChase(strip.Color(127, 127, 127), 25); // set brightness to 25
-  if (runAnimation)
-    theaterChase(strip.Color(255, 255, 0), 25);
-  if (runAnimation)
-    theaterChase(strip.Color(127, 0, 0), 25);
-  if (runAnimation)
-    theaterChase(strip.Color(0, 255, 0), 25);
-  if (runAnimation)
-    theaterChase(strip.Color(0, 0, 127), 25);
-  if (runAnimation)
-    theaterChase(strip.Color(143, 0, 255), 25);
+  animateThroughColors(3, 100,  5);
+  animateThroughColors(4,  50,  5);
+  animateThroughColors(3,  25, 10);
 }
 
 void makeHttpGetRequest()
