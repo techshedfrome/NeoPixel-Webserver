@@ -43,3 +43,4 @@ We've imported ArduinoJSON to deserialise the data we fetch from InfluxDb.
 * Async webserver example code: https://github.com/me-no-dev/ESPAsyncWebServer/tree/master/examples/simple_server
 * Basic light ring animation:  https://github.com/JonnyBanana/NEOPIXEL_WS2812_5050_SKETCHS/blob/master/Code/Like_Disco/Like_Disco.ino
 * Awesome dummy API returning various JSON objects for testing purposes: http://jsonplaceholder.typicode.com
+* Breathe animation inspired by https://arduino.stackexchange.com/questions/21312/neopixel-ring-how-to-breathe-in-a-circle-motion

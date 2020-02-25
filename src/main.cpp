@@ -19,7 +19,7 @@ const char *PARAM_MESSAGE = "message";
 #define STASSID "Remakery"
 #define STAPSK "Remakery"
 #define MDNS_HOSTNAME "disco"
-#define LED_PIN 2
+#define LED_PIN 14
 #define LED_COUNT 12
 #endif
 
@@ -30,7 +30,11 @@ const char *password = STAPSK;
 const char *hostname = MDNS_HOSTNAME;
 bool runAnimation = true;
 
-const int led = 16;
+const int onboardLed = 16;
+
+int showR = 0;
+int showG = 0;
+int showB = 0;
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 WiFiClient wifi;
@@ -43,8 +47,8 @@ void initialiseNeopixel(){
 }
 
 void setUpOnboardLed(){
-  pinMode(led, OUTPUT);
-  digitalWrite(led, 0);
+  pinMode(onboardLed, OUTPUT);
+  digitalWrite(onboardLed, 0);
 }
 
 void setupNetworking(){
@@ -66,7 +70,7 @@ void setupNetworking(){
 
 void notFound(AsyncWebServerRequest *request)
 {
-  digitalWrite(led, 1);
+  digitalWrite(onboardLed, 1);
   String message = "File Not Found\n\n";
   message += "URL: ";
   message += request->url();
@@ -80,7 +84,7 @@ void notFound(AsyncWebServerRequest *request)
     message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
   }
   request->send(404, "text/plain", "Not found");
-  digitalWrite(led, 0);
+  digitalWrite(onboardLed, 0);
 }
 
 void spin(AsyncWebServerRequest *request)
@@ -98,19 +102,69 @@ void spin(AsyncWebServerRequest *request)
   request->send(200, "text/html", "<h1>" + message + "</h1>");
 }
 
+void setAllPixels(byte R, byte G, byte B)
+{
+  for (int i = 0; i < strip.numPixels(); i++)
+  {
+    strip.setPixelColor(i, R, G, B);
+  }
+}
+
+void fade(bool fadeUp, byte targetR, byte targetG, byte targetB, int pause, int steps)
+{
+  int tmpR, tmpG, tmpB;
+  for (int s = 1; s <= steps; s++)
+  {
+    int directionalMultiplier = fadeUp ? s : steps - s;
+    tmpR = (float)targetR / (float)steps * (float)directionalMultiplier;
+    tmpG = (float)targetG / (float)steps * (float)directionalMultiplier;
+    tmpB = (float)targetB / (float)steps * (float)directionalMultiplier;
+
+    setAllPixels(tmpR, tmpG, tmpB);
+
+    strip.show();
+    delay(pause);
+  }
+}
+
+void breathe(int pause, int steps, byte R, byte G, byte B)
+{
+  fade(true , R, G, B, pause, steps);
+  fade(false, R, G, B, pause, steps);
+  delay(pause * 4);
+}
+
+bool showBreathe = false;
+void showColors(int r, int g, int b)
+{
+  showBreathe = false;
+  showR = r;
+  showG = g;
+  showB = b;
+  showBreathe = true;
+}
+
+void showNormal() { showColors(13, 7, 89); }
+void showWarning() { showColors(95, 87, 12); }
+void showAlert() { showColors(98, 7, 24); }
+
 bool callHttpGet = false;
 void setupWebServer(){
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/plain", "hello from esp8266!");
   });
   server.on("/getsomething", HTTP_GET, [](AsyncWebServerRequest *request) {
-    digitalWrite(led, 1);
+    digitalWrite(onboardLed, 1);
     callHttpGet = true;
     request->send(200, "text/plain", "httpTest");
-    digitalWrite(led, 0);
+    digitalWrite(onboardLed, 0);
   });
 
   server.on("/spin", HTTP_GET, spin);
+  server.on("/normal", HTTP_GET, [](AsyncWebServerRequest *request) { showNormal(); request->send(200, "text/plain", "showing NORMAL state"); });
+  server.on("/warning", HTTP_GET, [](AsyncWebServerRequest *request) { showWarning(); request->send(200, "text/plain", "showing WARNING state"); });
+  server.on("/alert", HTTP_GET, [](AsyncWebServerRequest *request) { showAlert(); request->send(200, "text/plain", "showing ALERT state"); });
+  server.on("/clear", HTTP_GET, [](AsyncWebServerRequest *request) { showBreathe = false; request->send(200, "text/plain", "clear state"); });
 
   // handle a POST request to <IP>/ with a form field message set to <message>
   server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -174,14 +228,16 @@ void animateThroughColors(int animationStepSize, int animationStepDelay, int ite
   if (runAnimation) animate(strip.Color(143, 000, 255), animationStepSize, animationStepDelay, iterationsPerColor);
 }
 
+
+
 void disco()
 {
-  strip.clear();
-  strip.show();
+  // strip.clear();
+  // strip.show();
 
-  animateThroughColors(3, 100,  5);
-  animateThroughColors(4,  50,  5);
-  animateThroughColors(3,  25, 10);
+  // animateThroughColors(3, 100,  5);
+  // animateThroughColors(4,  50,  5);
+  // animateThroughColors(3,  25, 10);
 }
 
 void makeHttpGetRequest()
@@ -231,10 +287,13 @@ void makeHttpGetRequest()
   }
 }
 
+
 void loop()
 {
   MDNS.update();
   disco();
+  if (showBreathe)
+    breathe(10, 30, showR, showG, showB);
 
   if (callHttpGet){
     makeHttpGetRequest();
